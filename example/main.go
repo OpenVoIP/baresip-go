@@ -1,19 +1,33 @@
 package main
 
 import (
+	"bufio"
+	"fmt"
+	"os"
 	"time"
 
 	"github.com/OpenVoIP/baresip-go/binding"
+	"github.com/OpenVoIP/baresip-go/ctrltcp"
 )
 
 func main() {
-	go testDial()
+	// go testDial()
+	go testTCP()
 
-	binding.Start()
+	// binding.Start()
+
+	input := bufio.NewScanner(os.Stdin)
+	input.Scan()
+	fmt.Println(input.Text())
 
 }
 
 func testDial() {
-	time.Sleep(5 * time.Second)
+	time.Sleep(3 * time.Second)
 	binding.UAConnect("*61")
+}
+
+func testTCP() {
+	time.Sleep(2 * time.Second)
+	ctrltcp.GetConn()
 }
