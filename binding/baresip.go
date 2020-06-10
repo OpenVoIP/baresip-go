@@ -2,13 +2,13 @@ package binding
 
 /*
 #cgo CFLAGS: -I/usr/local/include/re -I/usr/local/include/baresip
-#cgo LDFLAGS: -ldl -lbaresip -lrem -lre
+#cgo LDFLAGS: -ldl -lbaresip -lrem -lre -lcallback
 
 #include <stdint.h>
 #include <stdlib.h>
 #include <re.h>
 #include <baresip.h>
-
+#include "libcallback.h"
 
 static void signal_handler(int sig)
 {
@@ -27,17 +27,22 @@ static void signal_handler(int sig)
 	ua_stop_all(false);
 }
 
-static void ua_exit_handler(void *arg)
+extern  void ua_exit_handler(void *arg)
 {
 	(void)arg;
-	debug("ua exited -- stopping main runloop\n");
-
+	debug("tqcenglish ua exited -- stopping main runloop\n");
 	re_cancel();
 }
 
 static void ua_event_handler(struct ua *ua, enum ua_event ev,struct call *call, const char *prm, void *arg)
 {
+	Event();
 	re_printf("ua event: %s\n", uag_event_str(ev));
+}
+
+void callback(){
+	uag_set_exit_handler(ua_exit_handler, NULL);
+	uag_event_register(ua_event_handler, NULL);
 }
 
 int mainLoop(){
@@ -85,8 +90,7 @@ func Start() (err C.int) {
 		goto out
 	}
 
-	// uag_set_exit_handler(ua_exit_handler, NULL);
-	// uag_event_register(ua_event_handler, NULL);
+	C.callback()
 
 	/* Load modules */
 	err = C.conf_modules()

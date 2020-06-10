@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	go testDial()
+	// go testDial()
 
 	binding.Start()
 
