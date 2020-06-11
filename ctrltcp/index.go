@@ -68,12 +68,10 @@ func connect() {
 	}
 	// go info.writeData()
 	go info.readData()
+
 	// test
 	go func() {
-		for {
-			data := <-info.events
-			fmt.Printf("data %+v\n", data)
-		}
+
 	}()
 }
 
@@ -128,5 +126,13 @@ func (info *ConnectInfo) readData() {
 			}
 		}
 		result.Reset()
+	}
+}
+
+//EventHandle 事件处理
+func EventHandle(handle func(info EventInfo)) {
+	for {
+		data := <-info.events
+		handle(data)
 	}
 }

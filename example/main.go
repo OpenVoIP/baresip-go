@@ -11,10 +11,10 @@ import (
 )
 
 func main() {
-	// go testDial()
+	go testDial()
 	go testTCP()
 
-	// binding.Start()
+	binding.Start()
 
 	input := bufio.NewScanner(os.Stdin)
 	input.Scan()
@@ -30,4 +30,7 @@ func testDial() {
 func testTCP() {
 	time.Sleep(2 * time.Second)
 	ctrltcp.GetConn()
+	ctrltcp.EventHandle(func(info ctrltcp.EventInfo) {
+		fmt.Printf("实时事件 %+v", info)
+	})
 }
