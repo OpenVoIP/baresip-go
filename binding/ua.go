@@ -26,7 +26,7 @@ func UAConnect(number string) {
 
 //UAHangup 挂断
 func UAHangup() {
-	C.ua_connect(C.uag_current(), nil, 0, nil)
+	C.ua_hangup(C.uag_current(), nil, 0, nil)
 }
 
 //UAAnswer 接听
