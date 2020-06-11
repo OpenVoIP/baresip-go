@@ -23,3 +23,15 @@ func UAConnect(number string) {
 	C.ua_connect(C.uag_current(), nil, nil, cNumber, C.VIDMODE_ON)
 	defer C.free(unsafe.Pointer(cNumber))
 }
+
+//UAHangup 挂断
+func UAHangup() {
+	C.ua_connect(C.uag_current(), nil, 0, nil)
+}
+
+//UAAnswer 接听
+func UAAnswer() {
+	/* Stop any ongoing ring-tones */
+	// C.mem_deref(menu.play);
+	C.ua_hold_answer(C.uag_current(), nil, VIDMODE_ON)
+}
