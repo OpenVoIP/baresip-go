@@ -33,5 +33,5 @@ func UAHangup() {
 func UAAnswer() {
 	/* Stop any ongoing ring-tones */
 	// C.mem_deref(menu.play);
-	C.ua_hold_answer(C.uag_current(), nil, VIDMODE_ON)
+	C.ua_hold_answer(C.uag_current(), nil, C.VIDMODE_ON)
 }
