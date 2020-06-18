@@ -14,7 +14,7 @@ func main() {
 	go testDial()
 	go testTCP()
 
-	binding.Start()
+	go binding.Start()
 
 	input := bufio.NewScanner(os.Stdin)
 	input.Scan()

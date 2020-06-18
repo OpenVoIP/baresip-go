@@ -1,6 +1,7 @@
 {
     "cSpell.words": [
-        "baresip"
+        "baresip",
+        "gpiod"
     ],
     "cmake.configureOnOpen": false
 }

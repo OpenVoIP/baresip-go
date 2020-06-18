@@ -1,7 +1,7 @@
 package binding
 
 /*
-#cgo CFLAGS: -I/usr/local/include/re -I/usr/local/include/baresip
+#cgo CFLAGS: -I/usr/local/include/re -I/usr/local/include
 #cgo LDFLAGS: -ldl -lbaresip -lrem -lre
 
 #include <stdint.h>
@@ -91,6 +91,7 @@ func Start() (err C.int) {
 	/* Load modules */
 	err = C.conf_modules()
 	if err != 0 {
+		fmt.Errorf("c conf modules failure")
 		goto out
 	}
 

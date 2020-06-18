@@ -64,7 +64,7 @@ func connect() {
 	var err error
 	info.conn, err = net.DialTimeout("tcp", "127.0.0.1:4444", 5*time.Second)
 	if err != nil {
-		fmt.Printf("connect failed, err : %v\n", err.Error())
+		fmt.Printf("connect failed, err : %+v \n", err.Error())
 		return
 	}
 	// go info.writeData()
