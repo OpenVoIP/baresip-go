@@ -12,13 +12,14 @@ package binding
 import "C"
 
 import (
-	"fmt"
 	"unsafe"
+
+	log "github.com/sirupsen/logrus"
 )
 
 //UAConnect 拨打
 func UAConnect(number string) {
-	fmt.Printf("call %s", number)
+	log.Printf("call %s", number)
 	cNumber := C.CString(number)
 	C.ua_connect(C.uag_current(), nil, nil, cNumber, C.VIDMODE_ON)
 	defer C.free(unsafe.Pointer(cNumber))

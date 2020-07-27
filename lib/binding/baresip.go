@@ -48,8 +48,9 @@ int mainLoop(){
 import "C"
 
 import (
-	"fmt"
 	"unsafe"
+
+	log "github.com/sirupsen/logrus"
 )
 
 //Start 启动
@@ -63,7 +64,7 @@ func Start() (err C.int) {
 
 	err = C.conf_configure()
 	if err != 0 {
-		fmt.Printf("main: configure failed: %m\n", err)
+		log.Printf("main: configure failed: %m\n", err)
 		goto out
 	}
 
@@ -73,7 +74,7 @@ func Start() (err C.int) {
 	 */
 	err = C.baresip_init(C.conf_config())
 	if err != 0 {
-		fmt.Printf("main: baresip init failed (%m)\n", err)
+		log.Printf("main: baresip init failed (%m)\n", err)
 		goto out
 	}
 
@@ -91,7 +92,7 @@ func Start() (err C.int) {
 	/* Load modules */
 	err = C.conf_modules()
 	if err != 0 {
-		fmt.Errorf("c conf modules failure")
+		log.Errorf("c conf modules failure")
 		goto out
 	}
 
@@ -112,7 +113,7 @@ out:
 	/* NOTE: modules must be unloaded after all application
 	 *       activity has stopped.
 	 */
-	fmt.Printf("main: unloading modules..\n")
+	log.Printf("main: unloading modules..\n")
 	C.mod_close()
 
 	C.libre_close()
