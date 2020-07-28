@@ -43,7 +43,7 @@ func HandControlAction() {
 			ctx := context.Background()
 			result := RedisInstance.RPop(ctx, "control-channel")
 			value := result.Val()
-			log.Infof("%s get %s", result.Name, value)
+			// log.Infof("%s get %s", result.Name(), value)
 			if value != "" {
 				info := &ControlInfo{}
 				json.Unmarshal([]byte(value), info)
@@ -57,18 +57,7 @@ func HandControlAction() {
 func runCMD(info *ControlInfo) {
 	data, _ := json.Marshal(map[string]string{"command": info.CMD, "params": info.Data})
 	cmd := string(data)
-
-	switch info.CMD {
-	case "dial":
-		log.Info("dial  %s", info.Data)
-	case "hangup":
-		log.Info("hangup %s", info.Data)
-	case "answer":
-		log.Info("answer %s", info.Data)
-	default:
-		log.Warnf("unknown cmd %s", info.CMD)
-		return
-	}
+	log.Infof("send cmd %s to baresip  %s", info.CMD, info.Data)
 	if connectInfoInstacne != nil && connectInfoInstacne.writeMsg != nil {
 		connectInfoInstacne.writeMsg <- cmd
 	}
