@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -28,13 +29,15 @@ func ParseAccountaor(aor string) (exten, host string, error error) {
 // `
 func ParseRegInfo(data string) (result map[string]string) {
 	result = make(map[string]string)
-	re := regexp.MustCompile(`sip:(\d+)@\S+\w+\s+\S+(OK|ERR)`)
+	re := regexp.MustCompile(`sip:(\d+)@(\S+)\s+\S+(OK|ERR)`)
 	matched := re.FindAllStringSubmatch(data, -1)
 	for _, match := range matched {
-		log.Debugf("exten is: %s, status is: %s\n", match[1], match[2])
-		result[match[1]] = "ok"
-		if match[2] == "ERR" {
-			result[match[1]] = "fail"
+		key := fmt.Sprintf("%s-%s", match[1], match[2])
+		log.Debugf("exten %s, status is: %s\n", key, match[3])
+
+		result[key] = "ok"
+		if match[3] == "ERR" {
+			result[key] = "fail"
 		}
 	}
 	return

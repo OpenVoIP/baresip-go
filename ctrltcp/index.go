@@ -194,7 +194,7 @@ func (info *ConnectInfo) eventHandle() {
 			// 写入 redis
 			// 分机通话状态
 			if event.Status != "" {
-				err := RedisInstance.Set(ctx, fmt.Sprintf("baresip-call-status-%s", event.Exten), event.Status, 0).Err()
+				err := RedisInstance.Set(ctx, fmt.Sprintf("baresip-call-status-%s-%s", event.Exten, event.Host), event.Status, 0).Err()
 				if err != nil {
 					log.Errorf("redis write %+v", err)
 				}
@@ -202,7 +202,7 @@ func (info *ConnectInfo) eventHandle() {
 
 			// 分机注册状态
 			if event.RegStatus != "" {
-				err := RedisInstance.Set(ctx, fmt.Sprintf("baresip-reg-status-%s", event.Exten), event.RegStatus, 0).Err()
+				err := RedisInstance.Set(ctx, fmt.Sprintf("baresip-reg-status-%s-%s", event.Exten, event.Host), event.RegStatus, 0).Err()
 				if err != nil {
 					log.Errorf("redis write %+v", err)
 				}
