@@ -170,8 +170,10 @@ func (info *ConnectInfo) eventHandle() {
 					event.Status = "ringing"
 				case "CALL_INCOMING":
 					event.Status = "ring"
+
 				case "CALL_ESTABLISHED":
 					event.Status = "answer"
+
 				case "CALL_CLOSED":
 					event.Status = "idle"
 				case "REGISTER_OK":
@@ -189,12 +191,17 @@ func (info *ConnectInfo) eventHandle() {
 			}
 
 			// 发布订阅
-			RedisInstance.Publish(ctx, "session-channel", event)
+			publishJSON, _ := json.Marshal(event)
+			err := RedisInstance.Publish(ctx, "session-channel", publishJSON).Err()
+			if err != nil {
+				log.Errorf("publish error %+v", err)
+			}
 
 			// 写入 redis
 			// 分机通话状态
-			if event.Status != "" {
-				err := RedisInstance.Set(ctx, fmt.Sprintf("baresip-call-status-%s-%s", event.Exten, event.Host), event.Status, 0).Err()
+			if event.Event {
+				eventJSON, _ := json.Marshal(event)
+				err := RedisInstance.Set(ctx, fmt.Sprintf("baresip-call-status-%s-%s", event.Exten, event.Host), eventJSON, 0).Err()
 				if err != nil {
 					log.Errorf("redis write %+v", err)
 				}
@@ -202,7 +209,9 @@ func (info *ConnectInfo) eventHandle() {
 
 			// 分机注册状态
 			if event.RegStatus != "" {
-				err := RedisInstance.Set(ctx, fmt.Sprintf("baresip-reg-status-%s-%s", event.Exten, event.Host), event.RegStatus, 0).Err()
+				regStatus := map[string]string{"status": event.RegStatus, "cause": event.Param}
+				statusJSON, _ := json.Marshal(regStatus)
+				err := RedisInstance.Set(ctx, fmt.Sprintf("baresip-reg-status-%s-%s", event.Exten, event.Host), statusJSON, 0).Err()
 				if err != nil {
 					log.Errorf("redis write %+v", err)
 				}
