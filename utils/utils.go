@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
-	"strings"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -14,12 +13,13 @@ func ParseAccountaor(aor string) (exten, host string, error error) {
 	if aor == "" {
 		return "", "", errors.New("aor is empty")
 	}
-	result := strings.Split(aor, ":")[1]
-	if result == "" {
-		return "", "", errors.New("aor format error " + aor)
+	log.Debugf("parse accountaor %s", aor)
+	re := regexp.MustCompile(`sip:(\d+)@(\S+)`)
+	matched := re.FindAllStringSubmatch(aor, -1)
+	for _, match := range matched {
+		return match[1], match[2], nil
 	}
-	data := strings.Split(result, "@")
-	return data[0], data[1], nil
+	return "", "", errors.New("aor format error")
 }
 
 //ParseRegInfo 解析注册信息, OK, ERR 彩色显示
