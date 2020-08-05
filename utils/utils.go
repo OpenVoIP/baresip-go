@@ -28,6 +28,7 @@ func ParseAccountaor(aor string) (exten, host string, error error) {
 // 	  sip:1005@192.168.11.242                    ERR
 // `
 func ParseRegInfo(data string) (result map[string]string) {
+	log.Infof("ParseRegInfo input %s", data)
 	result = make(map[string]string)
 	re := regexp.MustCompile(`sip:(\d+)@(\S+)\s+\S+(OK|ERR)`)
 	matched := re.FindAllStringSubmatch(data, -1)
@@ -40,6 +41,7 @@ func ParseRegInfo(data string) (result map[string]string) {
 			result[key] = "fail"
 		}
 	}
+	log.Infof("ParseRegInfo %+v", result)
 	return
 }
 

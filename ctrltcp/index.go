@@ -220,7 +220,9 @@ func (info *ConnectInfo) eventHandle() {
 			// 查询分机注册状态响应
 			if strings.Contains(event.Data, "User Agents") {
 				for key, value := range utils.ParseRegInfo(event.Data) {
-					err := RedisInstance.Set(ctx, fmt.Sprintf("baresip-reg-status-%s", key), value, 0).Err()
+					regStatus := map[string]string{"status": value, "cause": "init query"}
+					statusJSON, _ := json.Marshal(regStatus)
+					err := RedisInstance.Set(ctx, fmt.Sprintf("baresip-reg-status-%s", key), statusJSON, 0).Err()
 					if err != nil {
 						log.Errorf("redis write %+v", err)
 					}
