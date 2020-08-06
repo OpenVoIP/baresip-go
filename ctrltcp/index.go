@@ -189,6 +189,10 @@ func (info *ConnectInfo) eventHandle() {
 				event.Exten = exten
 				event.Host = host
 			}
+			// TODO 由于 baresip 与 asterisk 存在多余事件 "param":"401 Unauthorized"
+			if event.Param == "401 Unauthorized" {
+				continue
+			}
 
 			// 发布订阅
 			publishJSON, _ := json.Marshal(event)
@@ -229,6 +233,7 @@ func (info *ConnectInfo) eventHandle() {
 				}
 			}
 
+			// 当前通话列表
 			if strings.Contains(event.Data, "Active calls") {
 				utils.ParseActiveCall(event.Data)
 			}
