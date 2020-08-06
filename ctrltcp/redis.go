@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/OpenVoIP/baresip-go/utils"
 	redis "github.com/go-redis/redis/v8"
 	log "github.com/sirupsen/logrus"
 )
@@ -60,5 +61,18 @@ func runCMD(info *ControlInfo) {
 	log.Infof("send cmd %s to baresip  %s", info.CMD, info.Data)
 	if connectInfoInstacne != nil && connectInfoInstacne.writeMsg != nil {
 		connectInfoInstacne.writeMsg <- cmd
+	}
+}
+
+// PublishEvent 发布订阅
+func PublishEvent(event utils.NewEventInfo) {
+	publishJSON, err := json.Marshal(event)
+	if err != nil {
+		log.Errorf("publish json marshal error %+v", err)
+		return
+	}
+	err = RedisInstance.Publish(ctx, "session-channel", publishJSON).Err()
+	if err != nil {
+		log.Errorf("publish error %+v", err)
 	}
 }

@@ -19,45 +19,12 @@ https://github.com/baresip/baresip/blob/b87324556a4c5fa9c2ad90c5293067268a31a75f
 连接 baresip ctrl_tcp 模块
 */
 
-//ResponseInfo 命令响应信息
-// "response":true,"ok":true, "data":"\n--- Active calls (1) ---\n> [line 1]  0:00:00   INCOMING             sip:1003@192.168.11.242\n\n"
-type ResponseInfo struct {
-	Response bool `json:"response"`
-	// OK       bool   `json:"ok"`
-	Data string `json:"data"`
-}
-
-//EventInfo baresip 事件信息
-type EventInfo struct {
-	Event           bool   `json:"event"`
-	Type            string `json:"type"`
-	Class           string `json:"class"`
-	Accountaor      string `json:"accountaor"`
-	Direction       string `json:"direction"`
-	Peeruri         string `json:"peeruri"`
-	Peerdisplayname string `json:"peerdisplayname"`
-	ID              string `json:"id"`
-	Param           string `json:"param"`
-}
-
-//NewEventInfo 重定义新事件
-type NewEventInfo struct {
-	RegStatus string `json:"regstatus"` //注册状态-是否注册成功
-	Status    string `json:"status"`    //从 type 获取分机当前状态-是否通话
-	Exten     string `json:"exten"`     // 注册分机号
-	Host      string `json:"host"`      // 注册地址
-	TimeStamp string `json:"timestamp"`
-
-	EventInfo
-	ResponseInfo
-}
-
 //ConnectInfo 连接信息
 type ConnectInfo struct {
 	conn     net.Conn
-	writeMsg chan string       // 发送到 baresip 的消息
-	events   chan NewEventInfo // 记录从 baresip 获取的事件, 命令响应
-	stop     chan bool         // 标记连接是否断开
+	writeMsg chan string             // 发送到 baresip 的消息
+	events   chan utils.NewEventInfo // 记录从 baresip 获取的事件, 命令响应
+	stop     chan bool               // 标记连接是否断开
 }
 
 var ctx = context.Background()
@@ -68,7 +35,7 @@ var connectInfoInstacne *ConnectInfo
 func InitConn() *ConnectInfo {
 	connectInfoInstacne = &ConnectInfo{
 		writeMsg: make(chan string, 100),
-		events:   make(chan NewEventInfo, 1000),
+		events:   make(chan utils.NewEventInfo, 1000),
 		stop:     make(chan bool),
 	}
 	return connectInfoInstacne
@@ -137,7 +104,7 @@ func (info *ConnectInfo) readData() {
 				if len(res) == 0 {
 					continue
 				}
-				var eventInfo NewEventInfo
+				var eventInfo utils.NewEventInfo
 				err := json.Unmarshal(res, &eventInfo)
 				if err != nil {
 					log.Errorf("json unmarshal error %+v", err)
@@ -189,24 +156,16 @@ func (info *ConnectInfo) eventHandle() {
 				event.Exten = exten
 				event.Host = host
 			}
-			// TODO 由于 baresip 与 asterisk 存在多余事件 "param":"401 Unauthorized"
+
+			// TODO 由于 baresip 与 asterisk 交互存在多余事件 "param":"401 Unauthorized"
 			if event.Param == "401 Unauthorized" {
 				continue
 			}
 
-			// 发布订阅
-			publishJSON, _ := json.Marshal(event)
-			err := RedisInstance.Publish(ctx, "session-channel", publishJSON).Err()
-			if err != nil {
-				log.Errorf("publish error %+v", err)
-			}
-
-			// 写入 redis
-			// 分机通话状态
+			// 分机通话状态 写入 redis
 			if event.Event {
 				eventJSON, _ := json.Marshal(event)
-				err := RedisInstance.Set(ctx, fmt.Sprintf("baresip-call-status-%s-%s", event.Exten, event.Host), eventJSON, 0).Err()
-				if err != nil {
+				if err := RedisInstance.Set(ctx, fmt.Sprintf("baresip-call-status-%s-%s", event.Exten, event.Host), eventJSON, 0).Err(); err != nil {
 					log.Errorf("redis write %+v", err)
 				}
 			}
@@ -215,28 +174,30 @@ func (info *ConnectInfo) eventHandle() {
 			if event.RegStatus != "" {
 				regStatus := map[string]string{"status": event.RegStatus, "cause": event.Param}
 				statusJSON, _ := json.Marshal(regStatus)
-				err := RedisInstance.Set(ctx, fmt.Sprintf("baresip-reg-status-%s-%s", event.Exten, event.Host), statusJSON, 0).Err()
-				if err != nil {
+				if err := RedisInstance.Set(ctx, fmt.Sprintf("baresip-reg-status-%s-%s", event.Exten, event.Host), statusJSON, 0).Err(); err != nil {
 					log.Errorf("redis write %+v", err)
 				}
 			}
 
-			// 查询分机注册状态响应
+			// 查询分机注册状态响应, 将 response 转为 reg event
 			if strings.Contains(event.Data, "User Agents") {
-				for key, value := range utils.ParseRegInfo(event.Data) {
-					regStatus := map[string]string{"status": value, "cause": "init query"}
+				for _, value := range utils.ParseRegInfo(event.Data) {
+					regStatus := map[string]string{"status": value.RegStatus, "cause": "init query"}
 					statusJSON, _ := json.Marshal(regStatus)
-					err := RedisInstance.Set(ctx, fmt.Sprintf("baresip-reg-status-%s", key), statusJSON, 0).Err()
-					if err != nil {
+					if err := RedisInstance.Set(ctx, fmt.Sprintf("baresip-reg-status-%s-%s", event.Exten, event.Host), statusJSON, 0).Err(); err != nil {
 						log.Errorf("redis write %+v", err)
 					}
+					PublishEvent(value)
 				}
 			}
 
 			// 当前通话列表
-			if strings.Contains(event.Data, "Active calls") {
-				utils.ParseActiveCall(event.Data)
-			}
+			// if strings.Contains(event.Data, "Active calls") {
+			// 	utils.ParseActiveCall(event.Data)
+			// }
+
+			// 发布订阅
+			PublishEvent(event)
 
 			// 日志调试
 			// log.Debugf("event %+v", event)
