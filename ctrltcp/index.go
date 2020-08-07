@@ -184,7 +184,7 @@ func (info *ConnectInfo) eventHandle() {
 				for _, value := range utils.ParseRegInfo(event.Data) {
 					regStatus := map[string]string{"status": value.RegStatus, "cause": "init query"}
 					statusJSON, _ := json.Marshal(regStatus)
-					if err := RedisInstance.Set(ctx, fmt.Sprintf("baresip-reg-status-%s-%s", event.Exten, event.Host), statusJSON, 0).Err(); err != nil {
+					if err := RedisInstance.Set(ctx, fmt.Sprintf("baresip-reg-status-%s-%s", value.Exten, value.Host), statusJSON, 0).Err(); err != nil {
 						log.Errorf("redis write %+v", err)
 					}
 					PublishEvent(value)
