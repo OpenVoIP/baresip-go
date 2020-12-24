@@ -15,7 +15,7 @@ func ParseAccountaor(aor string) (exten, host string, error error) {
 		return "", "", errors.New("aor is empty")
 	}
 	log.Debugf("parse accountaor %s", aor)
-	re := regexp.MustCompile(`sip:(\d+)@(\S+)`)
+	re := regexp.MustCompile(`sip:(\S+)@(\S+)`)
 	matched := re.FindAllStringSubmatch(aor, -1)
 	for _, match := range matched {
 		return match[1], match[2], nil
@@ -31,7 +31,7 @@ func ParseAccountaor(aor string) (exten, host string, error error) {
 func ParseRegInfo(data string) (result map[string]NewEventInfo) {
 	log.Infof("ParseRegInfo input %s", data)
 	result = make(map[string]NewEventInfo)
-	re := regexp.MustCompile(`sip:(\d+)@(\S+)\s+\S+(OK|ERR)`)
+	re := regexp.MustCompile(`sip:(\S+)@(\S+)\s+\S+(OK|ERR)`)
 	matched := re.FindAllStringSubmatch(data, -1)
 	for _, match := range matched {
 		key := fmt.Sprintf("%s-%s", match[1], match[2])
