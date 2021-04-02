@@ -67,14 +67,12 @@ func (info *ConnectInfo) writeData() {
 	defer info.conn.Close()
 
 	for {
-		select {
-		case msg := <-info.writeMsg:
-			_, err := info.conn.Write([]byte(fmt.Sprintf("%d:%s,", len(msg), msg)))
-			if err != nil {
-				log.Errorf("tcp connect write error", err)
-				info.stop <- true
-				return
-			}
+		msg := <-info.writeMsg
+		_, err := info.conn.Write([]byte(fmt.Sprintf("%d:%s,", len(msg), msg)))
+		if err != nil {
+			log.Errorf("tcp connect write error", err)
+			info.stop <- true
+			return
 		}
 	}
 
@@ -137,16 +135,19 @@ func (info *ConnectInfo) eventHandle() {
 					event.Status = "ringing"
 				case "CALL_INCOMING":
 					event.Status = "ring"
-
 				case "CALL_ESTABLISHED":
 					event.Status = "answer"
-
 				case "CALL_CLOSED":
 					event.Status = "idle"
 				case "REGISTER_OK":
 					event.RegStatus = "ok"
 				case "REGISTER_FAIL":
 					event.RegStatus = "fail"
+				}
+
+				// 若注册成功且Status 为空，设置为  idle 状态
+				if event.RegStatus == "ok" && event.Status == "" {
+					event.Status = "idle"
 				}
 
 				exten, host, err := utils.ParseAccountaor(event.Accountaor)

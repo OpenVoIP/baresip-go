@@ -39,17 +39,15 @@ func ConnectRedis() {
 func HandControlAction() {
 	ticker := time.NewTicker(200 * time.Millisecond)
 	for {
-		select {
-		case <-ticker.C:
-			ctx := context.Background()
-			result := RedisInstance.RPop(ctx, "control-channel")
-			value := result.Val()
-			// log.Infof("%s get %s", result.Name(), value)
-			if value != "" {
-				info := &ControlInfo{}
-				json.Unmarshal([]byte(value), info)
-				runCMD(info)
-			}
+		<-ticker.C
+		ctx := context.Background()
+		result := RedisInstance.RPop(ctx, "control-channel")
+		value := result.Val()
+		// log.Infof("%s get %s", result.Name(), value)
+		if value != "" {
+			info := &ControlInfo{}
+			json.Unmarshal([]byte(value), info)
+			runCMD(info)
 		}
 	}
 }
