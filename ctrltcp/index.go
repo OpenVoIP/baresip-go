@@ -143,6 +143,9 @@ func (info *ConnectInfo) eventHandle() {
 					event.RegStatus = "ok"
 				case "REGISTER_FAIL":
 					event.RegStatus = "fail"
+				default:
+					log.Debugf("ignore event %+v", event)
+					continue
 				}
 
 				// 若注册成功且Status 为空，设置为  idle 状态
