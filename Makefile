@@ -4,9 +4,9 @@ goVersion = $(shell go version)
 
 # build dev
 dev:
-	cd cmd && go build -o ../deployments/baresip-go
-	./deployments/baresip-go -debug
+	cd cmd && go build -o ../deployments/bareservice-go
+	./deployments/bareservice-go -debug
 
 release:
-	cd cmd && gox -osarch="linux/arm" -ldflags "-X 'main.buildDateTime=$(buildDateTime)' -X 'main.gitCommitCode=$(gitCommitCode)' -s -w" -output ../deployments/baresip-go
-	cd deployments && upx -9 baresip-go && chmod +x baresip-go
+	cd cmd && gox -osarch="linux/arm" -ldflags "-X 'main.buildDateTime=$(buildDateTime)' -X 'main.gitCommitCode=$(gitCommitCode)' -X "main.goVersion=$(gitVersion)" -s -w" -output ../deployments/bareservice-go
+	cd deployments && upx -9 bareservice-go && chmod +x bareservice-go

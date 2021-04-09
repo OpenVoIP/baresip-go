@@ -10,13 +10,13 @@ import (
 	"github.com/OpenVoIP/baresip-go/ctrltcp"
 )
 
-func main() {
-	var (
-		gitCommitCode string
-		buildDateTime string
-		goVersion     string
-	)
+var (
+	gitCommitCode string
+	buildDateTime string
+	goVersion     string
+)
 
+func main() {
 	var (
 		host    = flag.String("host", "127.0.0.1", "Server host (valid values: 0.0.0.0)")
 		port    = flag.Int("port", 4444, "TCP port")
