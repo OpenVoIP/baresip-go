@@ -191,6 +191,21 @@ func (info *ConnectInfo) eventHandle() {
 					if err := RedisInstance.Set(ctx, fmt.Sprintf("baresip-reg-status-%s-%s", value.Exten, value.Host), statusJSON, 0).Err(); err != nil {
 						log.Errorf("redis write %+v", err)
 					}
+
+					// 如果分机状态 ok, 设置通话状态默认为 idle
+					callStatus := map[string]string{"cause": "init query"}
+					if value.RegStatus == "ok" {
+						callStatus["regstatus"] = "ok"
+						callStatus["status"] = "idle"
+					} else {
+						callStatus["regstatus"] = value.RegStatus
+						callStatus["status"] = ""
+					}
+					callStatusJSON, _ := json.Marshal(callStatus)
+					if err := RedisInstance.Set(ctx, fmt.Sprintf("baresip-call-status-%s-%s", value.Exten, value.Host), callStatusJSON, 0).Err(); err != nil {
+						log.Errorf("redis write %+v", err)
+					}
+
 					PublishEvent(value)
 				}
 			}
