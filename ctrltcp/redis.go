@@ -41,7 +41,7 @@ func HandControlAction() {
 	for {
 		<-ticker.C
 		ctx := context.Background()
-		result := RedisInstance.RPop(ctx, "control-channel")
+		result := RedisInstance.RPop(ctx, "sipau-channel")
 		value := result.Val()
 		// log.Infof("%s get %s", result.Name(), value)
 		if value != "" {
