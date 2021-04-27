@@ -8,6 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/OpenVoIP/baresip-go/ctrltcp"
+	"github.com/OpenVoIP/baresip-go/pkg/httpserver"
 )
 
 var (
@@ -15,6 +16,8 @@ var (
 	buildDateTime string
 	goVersion     string
 )
+
+var enableHTTP bool
 
 func main() {
 	var (
@@ -36,6 +39,10 @@ func main() {
 		log.Info("log level DEBUG")
 	} else {
 		log.Info("log level INFO")
+	}
+
+	if enableHTTP {
+		go httpserver.CreateServer()
 	}
 
 	ctrltcp.ConnectRedis()
