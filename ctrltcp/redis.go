@@ -3,6 +3,7 @@ package ctrltcp
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"sync"
 	"time"
 
@@ -19,8 +20,9 @@ var RedisInstance *redis.Client
 
 //ControlInfo 控制指令信息
 type ControlInfo struct {
-	CMD  string `json:"cmd" form:"cmd"`
-	Data string `json:"data" form:"data"`
+	CMD    string `json:"cmd" form:"cmd"`
+	Data   string `json:"data" form:"data"`
+	Number string `json:"nub" form:"nub" `
 }
 
 //ConnectRedis 连接redis
@@ -54,7 +56,11 @@ func HandControlAction() {
 
 //runCMD 像 baresip 执行命令
 func runCMD(info *ControlInfo) {
-	data, _ := json.Marshal(map[string]string{"command": info.CMD, "params": info.Data})
+	cmdMap := map[string]string{"command": info.CMD, "params": info.Data}
+	if info.Number != "" {
+		cmdMap["params"] = fmt.Sprintf("%s %s", info.Data, info.Number)
+	}
+	data, _ := json.Marshal(cmdMap)
 	cmd := string(data)
 	log.Infof("send cmd %s to baresip  %s", info.CMD, info.Data)
 	if connectInfoInstacne != nil && connectInfoInstacne.writeMsg != nil {
