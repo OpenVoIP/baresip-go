@@ -149,14 +149,6 @@ func (info *ConnectInfo) eventHandle() {
 				if event.RegStatus == "ok" && event.Status == "" {
 					event.Status = "idle"
 				}
-
-				exten, host, err := utils.ParseAccountaor(event.Accountaor)
-				if err != nil {
-					log.Error(err)
-					continue
-				}
-				event.Exten = exten
-				event.Host = host
 			}
 
 			// TODO 由于 baresip 与 asterisk 交互存在多余事件 "param":"401 Unauthorized"
@@ -165,8 +157,9 @@ func (info *ConnectInfo) eventHandle() {
 			}
 
 			// 分机通话状态 写入 redis
-			if event.Event {
+			if event.Event && event.Status != ""{
 				eventJSON, _ := json.Marshal(event)
+				event.Exten, event.Host, _ = utils.ParseAccountaor(event.Accountaor)
 				if err := RedisInstance.Set(ctx, fmt.Sprintf("baresip-call-status-%s-%s", event.Exten, event.Host), eventJSON, 0).Err(); err != nil {
 					log.Errorf("redis write %+v", err)
 				}
@@ -176,6 +169,7 @@ func (info *ConnectInfo) eventHandle() {
 			if event.RegStatus != "" {
 				regStatus := map[string]string{"status": event.RegStatus, "cause": event.Param}
 				statusJSON, _ := json.Marshal(regStatus)
+				event.Exten, event.Host, _ = utils.ParseAccountaor(event.Accountaor)
 				if err := RedisInstance.Set(ctx, fmt.Sprintf("baresip-reg-status-%s-%s", event.Exten, event.Host), statusJSON, 0).Err(); err != nil {
 					log.Errorf("redis write %+v", err)
 				}
