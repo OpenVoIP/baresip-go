@@ -144,11 +144,12 @@ func (info *ConnectInfo) eventHandle() {
 				case "REGISTER_FAIL":
 					event.RegStatus = "fail"
 				}
-
+				// FIXME 在通话过程中也会出现 RegStatus  状态，此操作导致状态覆盖
 				// 若注册成功且Status 为空，设置为  idle 状态
-				if event.RegStatus == "ok" && event.Status == "" {
-					event.Status = "idle"
-				}
+				// if event.RegStatus == "ok" && event.Status == "" {
+				// 	event.Status = "idle"
+				// }
+
 			}
 
 			// TODO 由于 baresip 与 asterisk 交互存在多余事件 "param":"401 Unauthorized"
@@ -157,7 +158,7 @@ func (info *ConnectInfo) eventHandle() {
 			}
 
 			// 分机通话状态 写入 redis
-			if event.Event && event.Status != ""{
+			if event.Event && event.Status != "" {
 				eventJSON, _ := json.Marshal(event)
 				event.Exten, event.Host, _ = utils.ParseAccountaor(event.Accountaor)
 				if err := RedisInstance.Set(ctx, fmt.Sprintf("baresip-call-status-%s-%s", event.Exten, event.Host), eventJSON, 0).Err(); err != nil {
