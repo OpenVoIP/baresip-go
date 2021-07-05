@@ -1,7 +1,6 @@
 package ctrltcp
 
 import (
-	"context"
 	"encoding/json"
 	"sync"
 	"time"
@@ -40,7 +39,6 @@ func HandControlAction() {
 	ticker := time.NewTicker(200 * time.Millisecond)
 	for {
 		<-ticker.C
-		ctx := context.Background()
 		result := RedisInstance.RPop(ctx, "control-channel")
 		value := result.Val()
 		// log.Infof("%s get %s", result.Name(), value)
