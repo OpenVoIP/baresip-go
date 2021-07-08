@@ -131,6 +131,7 @@ func (info *ConnectInfo) eventHandle() {
 			if event.Event {
 				switch event.Type {
 				case "CALL_PROGRESS":
+					fallthrough
 				case "CALL_RINGING":
 					event.Status = "ringing"
 				case "CALL_INCOMING":
